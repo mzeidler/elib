@@ -80,7 +80,7 @@ public class MainWindow extends Window implements Serializable {
 		setHeight(100, Unit.PERCENTAGE);
 		setClosable(false);
 		setDraggable(false);
-		setResizable(false);
+		setResizable(false); // Test Commit
 		center();
 	}
 

@@ -15061,6 +15061,16 @@ div.v-layout.v-horizontal.v-widget {
 	font-weight: bold;
 }
 
+.eLibtheme .smallFont {
+	font-size: 0.8em;
+}
+
+.eLibtheme .border {
+	border-style: solid;
+	border-color: #8CBEF0;
+	border-width: 1px;
+}
+
 .eLibtheme .yellowBackground {
 	background-color: yellow;
 }
@@ -15075,6 +15085,10 @@ div.v-layout.v-horizontal.v-widget {
 
 .eLibtheme .redBackground {
 	background-color: red;
+}
+
+.eLibtheme .lightGrayBackground {
+	background-color: #F6F6F6;
 }
 
 .eLibtheme .v-margin-left {

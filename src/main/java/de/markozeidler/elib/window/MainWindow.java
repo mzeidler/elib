@@ -13,6 +13,7 @@ import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
@@ -32,10 +33,6 @@ public class MainWindow extends Window implements Serializable {
 
 	private HeaderLayout headerLayout;
 
-	//private VerticalLayout upperToolbar;
-
-	//private VerticalLayout lowerToolbar;
-
 	private VerticalSplitPanel splitPanel;
 
 	private Grid<Document> grid;
@@ -43,6 +40,8 @@ public class MainWindow extends Window implements Serializable {
 	private TextArea textArea;
 
 	private UIBuilder uiBuilder;
+	
+	private ThemesWindow themesWindow;
 	
 	/**
 	 * Buttons
@@ -60,11 +59,14 @@ public class MainWindow extends Window implements Serializable {
 	
 	private Button bSelectionMode;
 	
+	private Button bThemes;
+	
 	@Inject
-	public MainWindow(JPAHandler jpaHandler, HeaderLayout headerLayout, UIBuilder uiBuilder) {
+	public MainWindow(JPAHandler jpaHandler, HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow) {
 		this.jpaHandler = jpaHandler;
 		this.headerLayout = headerLayout;
 		this.uiBuilder = uiBuilder;
+		this.themesWindow = themesWindow;
 	}
 
 	public void init() {
@@ -80,7 +82,7 @@ public class MainWindow extends Window implements Serializable {
 		setHeight(100, Unit.PERCENTAGE);
 		setClosable(false);
 		setDraggable(false);
-		setResizable(false); // Test Commit2
+		setResizable(false);
 		center();
 	}
 
@@ -169,12 +171,19 @@ public class MainWindow extends Window implements Serializable {
 				}
 			}
 		});
-		
+				
+		bThemes = uiBuilder.button(VaadinIcons.FILE_TREE, "Manage Themes").build();
+		bThemes.addClickListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				themesWindow.init();
+				UI.getCurrent().addWindow(themesWindow);
+			}
+		});
 	}
 	private VerticalLayout initLayouts() {
 
 		VerticalLayout upperToolbar = uiBuilder.VL().undefined().build();
-		upperToolbar.addComponents(bAdd, bRemove, bSelectionMode);
+		upperToolbar.addComponents(bAdd, bRemove, bSelectionMode, bThemes);
 
 		VerticalLayout lowerToolbar = uiBuilder.VL().undefined().build();
 		lowerToolbar.addComponents(bEdit, bAddCode, bSave);		

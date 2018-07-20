@@ -45,10 +45,11 @@ public class ChangePasswordWindow extends Window implements Serializable {
 		this.changePasswordWindow = this;
 	}
 	
-	public void init() {		
+	public void init() {
+		setCaption("Change Password");
 		setWidth(450, Unit.PIXELS);
 		setHeight(290, Unit.PIXELS);
-		setClosable(false);
+		setClosable(true);
 		setDraggable(false);
 		setResizable(false);
 		setModal(true);
@@ -63,12 +64,12 @@ public class ChangePasswordWindow extends Window implements Serializable {
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.addComponents(changePasswordButton, cancelButton);
 		
-		layout.addComponents(changePasswordMessage, oldPassword, newPassword, newPasswordRepeat, buttonLayout , message);
+		layout.addComponents(oldPassword, newPassword, newPasswordRepeat, buttonLayout , message);
 		setContent(layout);
 	}	
 	
 	private void initComponents() {
-		changePasswordMessage = new Label("<b>Change Password</b>", ContentMode.HTML);
+		//changePasswordMessage = new Label("<b>Change Password</b>", ContentMode.HTML);
 		
 		message = new Label("");
 		message.setContentMode(ContentMode.HTML);

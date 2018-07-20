@@ -15,6 +15,10 @@ public class ButtonBuilder extends BaseBuilder<ButtonBuilder> {
 		this.button.setDescription(description);
 	}
 	
+	public ButtonBuilder(String caption) {
+		this.button = new Button(caption);
+	}
+	
 	public Button build() {
 		return this.button;
 	}

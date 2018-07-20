@@ -22,6 +22,10 @@ public class UIBuilder {
 		return new ButtonBuilder(icon, description);
 	}
 	
+	public ButtonBuilder button(String caption) {
+		return new ButtonBuilder(caption);
+	}
+	
 	public LabelBuilder label() {
 		return new LabelBuilder();
 	}

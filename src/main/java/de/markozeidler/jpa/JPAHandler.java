@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
+import de.markozeidler.elib.entity.Theme;
 import de.markozeidler.elib.entity.User;
 
 @Singleton
@@ -27,6 +28,12 @@ public class JPAHandler {
 		TypedQuery<T> q = (TypedQuery<T>) getEntityManager().createQuery("SELECT f FROM " + entityType.getClass().getSimpleName() + " f", entityType.getClass());
 		List<T> entities = q.getResultList();
 		return entities;
+	}
+	
+	public List<Theme> findAllThemes() {
+		TypedQuery<Theme> q = (TypedQuery<Theme>) getEntityManager().createQuery("SELECT t FROM Theme t ORDER BY t.name asc", Theme.class);
+		List<Theme> themes = q.getResultList();
+		return themes;
 	}
 	
 	public <T> T find(T entityType, Integer id) {

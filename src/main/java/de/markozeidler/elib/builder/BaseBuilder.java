@@ -119,4 +119,8 @@ public abstract class BaseBuilder<T> {
 		return (T) this;
 	}
 	
+	public T caption(String caption) {
+		getComponent().setCaption(caption);
+		return (T) this;
+	}
 }

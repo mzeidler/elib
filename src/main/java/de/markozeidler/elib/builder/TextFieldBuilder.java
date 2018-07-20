@@ -32,5 +32,4 @@ public class TextFieldBuilder extends BaseBuilder<TextFieldBuilder> {
 		return textField;
 	}
 
-
 }

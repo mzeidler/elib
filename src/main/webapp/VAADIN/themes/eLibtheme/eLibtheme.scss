@@ -46,6 +46,16 @@
 	font-weight: bold;
   }
   
+  .smallFont {
+  	font-size: 0.8em;
+  }
+  
+  .border {
+	border-style: solid;
+    border-color: #8CBEF0;
+    border-width: 1px;  	
+  }
+  
   .yellowBackground {
   	background-color: yellow;
   }
@@ -60,6 +70,10 @@
       
   .redBackground {
   	background-color: red;
+  }
+  
+  .lightGrayBackground {
+  	background-color: #F6F6F6;
   }
         
   .v-margin-left   {padding-left:   10px;}

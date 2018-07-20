@@ -41,8 +41,20 @@ public class JPAHandler {
 	}
 	
 	public void save(Object entity) {
-		getEntityManager().getTransaction().begin();
+		getEntityManager().getTransaction().begin();		
 		getEntityManager().persist(entity);
+		getEntityManager().getTransaction().commit();
+	}
+	
+	public void update(Object entity) {
+		getEntityManager().getTransaction().begin();
+		getEntityManager().merge(entity);
+		getEntityManager().getTransaction().commit();
+	}	
+	
+	public void remove(Object entity) {
+		getEntityManager().getTransaction().begin();
+		getEntityManager().remove(entity);
 		getEntityManager().getTransaction().commit();
 	}
 	

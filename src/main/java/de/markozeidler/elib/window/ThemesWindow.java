@@ -1,5 +1,6 @@
 package de.markozeidler.elib.window;
 
+import java.awt.Dialog;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.TextField;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window;
 
@@ -40,6 +42,8 @@ public class ThemesWindow extends Window implements Serializable {
 	
 	private EditMode editMode;
 	
+	private ThemesWindow themesWindow;
+	
 	/**
 	 * Buttons 
 	 */
@@ -59,6 +63,7 @@ public class ThemesWindow extends Window implements Serializable {
 	public ThemesWindow(JPAHandler jpaHandler, UIBuilder uiBuilder) {
 		this.jpaHandler = jpaHandler;
 		this.uiBuilder = uiBuilder;
+		this.themesWindow = themesWindow;
 	}
 	
 	public void init() {
@@ -126,14 +131,23 @@ public class ThemesWindow extends Window implements Serializable {
 		bRemove = uiBuilder.button(VaadinIcons.TRASH, "Remove Theme").build();
 		bRemove.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				Theme theme = getSelectedTheme();
-				if (theme != null) {
-					jpaHandler.remove(theme);
-					refreshList(); //
-					setEditMode(EditMode.Browse);
-				} else {
-					Notification.show("No Theme is selected", Type.WARNING_MESSAGE);
-				}
+				
+				ConfirmationWindow confirmationWindow = new ConfirmationWindow("Are you sure that you want to delete this Theme?", "Yes", "No");
+				UI.getCurrent().addWindow(confirmationWindow);
+				confirmationWindow.addCloseListener(new CloseListener() {
+					@Override
+					public void windowClose(CloseEvent event) {
+						System.out.println("CLOSED... Answer is " + confirmationWindow.getSelectedOption());
+					}
+				});
+//				Theme theme = getSelectedTheme();
+//				if (theme != null) {
+//					jpaHandler.remove(theme);
+//					refreshList(); //
+//					setEditMode(EditMode.Browse);
+//				} else {
+//					Notification.show("No Theme is selected", Type.WARNING_MESSAGE);
+//				}
 			}
 		});
 		

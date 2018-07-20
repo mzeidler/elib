@@ -131,23 +131,27 @@ public class ThemesWindow extends Window implements Serializable {
 		bRemove = uiBuilder.button(VaadinIcons.TRASH, "Remove Theme").build();
 		bRemove.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				
-				ConfirmationWindow confirmationWindow = new ConfirmationWindow("Are you sure that you want to delete this Theme?", "Yes", "No");
-				UI.getCurrent().addWindow(confirmationWindow);
-				confirmationWindow.addCloseListener(new CloseListener() {
-					@Override
-					public void windowClose(CloseEvent event) {
-						System.out.println("CLOSED... Answer is " + confirmationWindow.getSelectedOption());
+				Theme theme = getSelectedTheme();
+				if (theme == null) {
+					Notification.show("No Theme is selected", Type.WARNING_MESSAGE);
+				} else {
+					if (theme.getDocuments().size() > 0) {
+						Notification.show("This Theme may not be removed. Documents are attached.", Type.WARNING_MESSAGE);
+					} else {
+						ConfirmationWindow confirmationWindow = new ConfirmationWindow("Are you sure that you want to delete this Theme?", "Yes", "No");
+						UI.getCurrent().addWindow(confirmationWindow);
+						confirmationWindow.addCloseListener(new CloseListener() {
+							@Override
+							public void windowClose(CloseEvent event) {
+								if ("Yes".equals(confirmationWindow.getSelectedOption())) {
+									jpaHandler.remove(theme);
+									refreshList();
+									setEditMode(EditMode.Browse);								
+								}
+							}
+						});						
 					}
-				});
-//				Theme theme = getSelectedTheme();
-//				if (theme != null) {
-//					jpaHandler.remove(theme);
-//					refreshList(); //
-//					setEditMode(EditMode.Browse);
-//				} else {
-//					Notification.show("No Theme is selected", Type.WARNING_MESSAGE);
-//				}
+				}
 			}
 		});
 		
@@ -161,7 +165,7 @@ public class ThemesWindow extends Window implements Serializable {
 		bCancel = uiBuilder.button("Cancel").build();
 		bCancel.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				setEditMode(EditMode.Browse); //jj
+				setEditMode(EditMode.Browse); //jjdsds
 			}
 		});
 		
@@ -226,42 +230,86 @@ public class ThemesWindow extends Window implements Serializable {
 		return layout;
 	}
 	
-	private void setEditMode(EditMode mode) {
-		editMode = mode;
+	private void setEditMode(EditMode mode) {	
+		int count = 0;
 		Theme theme = getSelectedTheme();
 				
-		// Save Button
-		bSave.setVisible(mode == EditMode.Edit || mode == EditMode.New);
-		bSave.setCaption(mode == EditMode.Edit ? "Update" : "Save");
-		
-		// Cancel Button
-		bCancel.setVisible(mode == EditMode.Edit || mode == EditMode.New);
+		editMode = theme == null ? EditMode.Clear : mode;
 
-		// Theme name text field
-		tName.setValue(theme == null ? "" : theme.getName());
-		tName.setPlaceholder(mode == EditMode.New ? "Enter new theme name..." : "");
-		tName.setReadOnly(mode != EditMode.Edit && mode != EditMode.New);
 		
-		// Remove Button
-		bRemove.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
+		switch(editMode) {
 		
-		// Add Button
-		bAdd.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
-		
-		// Refresh Button
-		bRefresh.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
-		
-		// Edit Button
-		bEdit.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
-		
-		// Message
-		if (mode == EditMode.New) {
-			message.setValue("New theme");
-		} else if (theme != null) {
-			int count = theme.getDocuments().size();
-			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");
-		} else {
+		case Clear:
+			
+			// Browse mode: No Thema is selected
+			bRefresh.setEnabled(true);
+			bAdd.setEnabled(true);
+			bEdit.setEnabled(true);
+			bRemove.setEnabled(false);
+			bCancel.setVisible(false);
+			bSave.setVisible(false);
+			
+			tName.setValue("");
+			tName.setPlaceholder("");
+			tName.setReadOnly(true);
 			message.setValue("");
+			break;
+			
+		case Browse:
+			
+			// Browse mode: A Thema is selected
+			bRefresh.setEnabled(true);
+			bAdd.setEnabled(true);
+			bEdit.setEnabled(true);
+			bRemove.setEnabled(true);
+			bCancel.setVisible(false);
+			bSave.setVisible(false);
+			
+			tName.setValue(theme.getName());
+			tName.setPlaceholder("");
+			tName.setReadOnly(true);
+			
+			count = theme.getDocuments().size();
+			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");			
+			break;
+			
+		case Edit:
+			
+			// Edit Mode
+			bRefresh.setEnabled(false);
+			bAdd.setEnabled(false);
+			bEdit.setEnabled(false);
+			bRemove.setEnabled(false);
+			bCancel.setVisible(true);
+			bSave.setVisible(true);
+			
+			bSave.setCaption("Update");
+			tName.setValue(theme.getName());
+			tName.setPlaceholder("");
+			tName.setReadOnly(false);
+			
+			count = theme.getDocuments().size();
+			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");			
+			break;
+			
+		case New:
+			
+			// New Mode
+			bRefresh.setEnabled(false);
+			bAdd.setEnabled(false);
+			bEdit.setEnabled(false);
+			bRemove.setEnabled(false);
+			bCancel.setVisible(true);
+			bSave.setVisible(true);
+			
+			bSave.setCaption("Save");
+			tName.setValue("");
+			tName.setPlaceholder("Enter new theme name...");
+			tName.setReadOnly(false);
+			message.setValue("New theme");
+			break;
+			
+
 		}
 		
 	}

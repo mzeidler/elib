@@ -15106,3 +15106,11 @@ div.v-layout.v-horizontal.v-widget {
 .eLibtheme .v-margin-bottom {
 	padding-bottom: 10px;
 }
+
+.eLibtheme .noPaddingBottom {
+	padding-bottom: 0px;
+}
+
+.eLibtheme .paddingBottom {
+	padding-bottom: 10px;
+}

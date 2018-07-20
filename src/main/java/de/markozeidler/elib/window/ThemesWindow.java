@@ -234,7 +234,7 @@ public class ThemesWindow extends Window implements Serializable {
 		int count = 0;
 		Theme theme = getSelectedTheme();
 				
-		editMode = theme == null ? EditMode.Clear : mode;
+		editMode = theme == null && mode != EditMode.New ? EditMode.Clear : mode;
 
 		
 		switch(editMode) {
@@ -244,7 +244,7 @@ public class ThemesWindow extends Window implements Serializable {
 			// Browse mode: No Thema is selected
 			bRefresh.setEnabled(true);
 			bAdd.setEnabled(true);
-			bEdit.setEnabled(true);
+			bEdit.setEnabled(false);
 			bRemove.setEnabled(false);
 			bCancel.setVisible(false);
 			bSave.setVisible(false);

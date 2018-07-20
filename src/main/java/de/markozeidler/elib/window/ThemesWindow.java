@@ -44,6 +44,8 @@ public class ThemesWindow extends Window implements Serializable {
 	
 	private ThemesWindow themesWindow;
 	
+	private VerticalLayout right;
+	
 	/**
 	 * Buttons 
 	 */
@@ -217,8 +219,9 @@ public class ThemesWindow extends Window implements Serializable {
 		HorizontalLayout rightBottom = uiBuilder.HL().build();
 		rightBottom.addComponents(bCancel, bSave);
 		
-		VerticalLayout right = uiBuilder.VL().build();
+		right = uiBuilder.VL().build();
 		right.setHeight(100, Unit.PERCENTAGE);
+		right.addStyleName("noPaddingBottom");
 		right.addComponents(buttonsLayout, rightMiddle, rightBottom);
 		right.setExpandRatio(rightMiddle, 1);
 
@@ -253,6 +256,12 @@ public class ThemesWindow extends Window implements Serializable {
 			tName.setPlaceholder("");
 			tName.setReadOnly(true);
 			message.setValue("");
+			
+			if (right != null) {
+				right.removeStyleName("paddingBottom");
+				right.addStyleName("noPaddingBottom");
+			}
+			
 			break;
 			
 		case Browse:
@@ -270,7 +279,13 @@ public class ThemesWindow extends Window implements Serializable {
 			tName.setReadOnly(true);
 			
 			count = theme.getDocuments().size();
-			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");			
+			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");		
+			
+			if (right != null) {
+				right.removeStyleName("paddingBottom");
+				right.addStyleName("noPaddingBottom");
+			}
+			
 			break;
 			
 		case Edit:
@@ -289,7 +304,13 @@ public class ThemesWindow extends Window implements Serializable {
 			tName.setReadOnly(false);
 			
 			count = theme.getDocuments().size();
-			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");			
+			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");		
+			
+			if (right != null) {
+				right.removeStyleName("noPaddingBottom");
+				right.addStyleName("paddingBottom");
+			}
+			
 			break;
 			
 		case New:
@@ -307,6 +328,12 @@ public class ThemesWindow extends Window implements Serializable {
 			tName.setPlaceholder("Enter new theme name...");
 			tName.setReadOnly(false);
 			message.setValue("New theme");
+			
+			if (right != null) {
+				right.removeStyleName("noPaddingBottom");
+				right.addStyleName("paddingBottom");
+			}
+			
 			break;
 			
 

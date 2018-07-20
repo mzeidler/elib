@@ -1,5 +1,6 @@
 package de.markozeidler.elib.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -45,6 +46,9 @@ public class Theme {
 	}
 
 	public List<Document> getDocuments() {
+		if (documents == null) {
+			documents = new ArrayList<>();
+		}
 		return documents;
 	}
 

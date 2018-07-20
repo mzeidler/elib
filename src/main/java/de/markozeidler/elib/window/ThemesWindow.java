@@ -2,6 +2,7 @@ package de.markozeidler.elib.window;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -29,8 +30,6 @@ public class ThemesWindow extends Window implements Serializable {
 	
 	private UIBuilder uiBuilder;
 	
-	private ThemesWindow themesWindow;
-	
 	private List<Theme> themes;
 	
 	private ListSelect<Theme> themesList;
@@ -38,6 +37,8 @@ public class ThemesWindow extends Window implements Serializable {
 	private TextField tName;
 	
 	private Label message;
+	
+	private EditMode editMode;
 	
 	/**
 	 * Buttons 
@@ -57,7 +58,6 @@ public class ThemesWindow extends Window implements Serializable {
 	@Inject
 	public ThemesWindow(JPAHandler jpaHandler, UIBuilder uiBuilder) {
 		this.jpaHandler = jpaHandler;
-		this.themesWindow = this;
 		this.uiBuilder = uiBuilder;
 	}
 	
@@ -77,28 +77,31 @@ public class ThemesWindow extends Window implements Serializable {
 	}
 	
 	private void initComponents() {
-		
-		themes = jpaHandler.findAllThemes();
-		 
-        themesList = new ListSelect<>(null, themes);
-        themesList.setSizeFull();
-        if (themes.size() > 0) {
-        	themesList.select(themes.get(0));
-        	themesList.focus();
-        	// addValueChangeListener not triggered
-        }
-        
- 
-        themesList.addValueChangeListener(event -> { 
-        	System.out.println("MARKOTEST: Theme selected: " + event.getValue());
-        	Notification.show("Value changed:", String.valueOf(event.getValue()), Type.TRAY_NOTIFICATION);
-        });
+		editMode = EditMode.Clear;
 		
         message = uiBuilder.label("message").build();
         message.addStyleName("smallFont");
         
         tName = uiBuilder.textField("Theme").caption("Theme").build();
         tName.setWidth(100, Unit.PERCENTAGE);
+        
+		themes = jpaHandler.findAllThemes();		 
+        themesList = new ListSelect<>(null, themes);
+        themesList.setSizeFull();
+        themesList.addValueChangeListener(event -> { 
+        	setEditMode(EditMode.Browse);
+        });
+
+        if (themes.size() > 0) {
+        	themesList.select(themes.get(0));
+        	themesList.focus();
+        }
+ 		
+	}
+	
+	private void refreshList() {
+		themes = jpaHandler.findAllThemes();
+		themesList.setItems(themes);
 	}
 	
 	private void initButtons() {
@@ -106,49 +109,73 @@ public class ThemesWindow extends Window implements Serializable {
 		bRefresh = uiBuilder.button(VaadinIcons.REFRESH, "Refresh Themes").build();
 		bRefresh.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				themesList.deselectAll();
+				refreshList();
+				setEditMode(EditMode.Clear);
 			}
 		});
 		
 		bAdd = uiBuilder.button(VaadinIcons.PLUS, "Add Theme").build();
 		bAdd.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
 				themesList.deselectAll();
-				tName.setPlaceholder("-- Theme name ---");
+				setEditMode(EditMode.New);
 			}
 		});
 		
 		bRemove = uiBuilder.button(VaadinIcons.TRASH, "Remove Theme").build();
 		bRemove.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				Theme theme = getSelectedTheme();
+				if (theme != null) {
+					jpaHandler.remove(theme);
+					refreshList(); //
+					setEditMode(EditMode.Browse);
+				} else {
+					Notification.show("No Theme is selected", Type.WARNING_MESSAGE);
+				}
 			}
 		});
 		
 		bEdit = uiBuilder.button(VaadinIcons.PENCIL, "Edit Theme").build();
 		bEdit.addClickListener(new Button.ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				//
-
+			public void buttonClick(ClickEvent event) {			
+				setEditMode(EditMode.Edit);		
 			}
 		});
 		
 		bCancel = uiBuilder.button("Cancel").build();
 		bCancel.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				setEditMode(EditMode.Browse); //jj
 			}
 		});
 		
 		bSave = uiBuilder.button("Save").build();
 		bSave.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				Theme theme = getSelectedTheme();
+				
+				boolean isNew = false;
+				if (theme == null) {
+					theme = new Theme();
+					isNew = true;
+				}
+				
+				if (tName.getValue() == null || "".equals(tName.getValue())) {
+					Notification.show("The Themename may not be empty", Type.WARNING_MESSAGE);
+				} else {
+					theme.setName(tName.getValue());
+					if (isNew) {
+						jpaHandler.save(theme);
+					} else {
+						jpaHandler.update(theme);
+					}
+					
+					refreshList();
+					setEditMode(EditMode.Browse);
+				}
+				
 			}
 		});		
 	}
@@ -184,4 +211,57 @@ public class ThemesWindow extends Window implements Serializable {
 		layout.setExpandRatio(right, 2);
 		return layout;
 	}
+	
+	private void setEditMode(EditMode mode) {
+		editMode = mode;
+		Theme theme = getSelectedTheme();
+				
+		// Save Button
+		bSave.setVisible(mode == EditMode.Edit || mode == EditMode.New);
+		bSave.setCaption(mode == EditMode.Edit ? "Update" : "Save");
+		
+		// Cancel Button
+		bCancel.setVisible(mode == EditMode.Edit || mode == EditMode.New);
+
+		// Theme name text field
+		tName.setValue(theme == null ? "" : theme.getName());
+		tName.setPlaceholder(mode == EditMode.New ? "Enter new theme name..." : "");
+		tName.setReadOnly(mode != EditMode.Edit && mode != EditMode.New);
+		
+		// Remove Button
+		bRemove.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
+		
+		// Add Button
+		bAdd.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
+		
+		// Refresh Button
+		bRefresh.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
+		
+		// Edit Button
+		bEdit.setEnabled(mode != EditMode.Edit && mode != EditMode.New);
+		
+		// Message
+		if (mode == EditMode.New) {
+			message.setValue("New theme");
+		} else if (theme != null) {
+			int count = theme.getDocuments().size();
+			message.setValue("This theme has " + count + " document" + (count == 1 ? "" : "s") + " attached");
+		} else {
+			message.setValue("");
+		}
+		
+	}
+	
+	private Theme getSelectedTheme() {
+		Theme theme = null;
+		Set<Theme> selectedThemes = themesList.getSelectedItems();
+		if (selectedThemes.size() > 0) {
+			theme = (Theme) selectedThemes.toArray()[0];
+		}
+		return theme;
+	}
+}
+
+enum EditMode {
+	Browse, New, Edit, Clear;
 }

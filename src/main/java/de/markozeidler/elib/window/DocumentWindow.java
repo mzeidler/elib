@@ -66,14 +66,22 @@ public class DocumentWindow extends Window implements Serializable {
 		center();
 		
 		initComponents();
+		fillFields();
 		setContent(initLayouts());
+	}
+	
+	private void fillFields() {
+		if (document != null) {
+			tTitle.setValue(document.getTitle());
+			cmbThemes.setValue(document.getTheme());
+		}
 	}
 	
 	private void initComponents() {
 		
 		tTitle = new TextField();
 		tTitle.setCaption("Title");
-		tTitle.setWidth(100, Unit.PERCENTAGE);
+		tTitle.setWidth(100, Unit.PERCENTAGE);		
 				
 		cmbThemes = new NativeSelect<>(null, themes);
 		cmbThemes.setCaption("Theme");

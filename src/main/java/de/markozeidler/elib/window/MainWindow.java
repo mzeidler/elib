@@ -3,7 +3,6 @@ package de.markozeidler.elib.window;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -14,8 +13,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
-import com.vaadin.ui.Window.CloseEvent;
-import com.vaadin.ui.Window.CloseListener;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;
@@ -62,7 +59,9 @@ public class MainWindow extends Window implements Serializable {
 	
 	private Button bRemove;
 	
-	private Button bEdit;
+	private Button bEditDocument;
+	
+	private Button bEditDocumentContent;
 	
 	private Button bSave;
 	
@@ -120,6 +119,7 @@ public class MainWindow extends Window implements Serializable {
 		documents = jpaHandler.findAll(new Document());
 		dataProvider = new ListDataProvider<Document>(documents);
 		grid.setDataProvider(dataProvider);
+		
 	}
 	
 	private void initGrid_old() {
@@ -130,6 +130,7 @@ public class MainWindow extends Window implements Serializable {
 		grid.addSelectionListener(event -> {
 			Set<Document> selected = event.getAllSelectedItems();
 
+			
 			if (selected.size() > 0) {
 
 				Document doc = (Document) selected.toArray()[0];
@@ -161,7 +162,8 @@ public class MainWindow extends Window implements Serializable {
 							if (newDocument != null) {
 								jpaHandler.save(newDocument);
 								documents.add(newDocument);
-								dataProvider.refreshAll();							
+								dataProvider.refreshAll();								
+								grid.select(newDocument);
 							}							
 						}
 					}
@@ -194,17 +196,40 @@ public class MainWindow extends Window implements Serializable {
 			}
 		});
 		
-		bEdit = uiBuilder.button(VaadinIcons.EDIT, "Edit Document").build();
-		bEdit.addClickListener(new Button.ClickListener() {
+		bEditDocument = uiBuilder.button(VaadinIcons.EDIT, "Edit Document").build();
+		bEditDocument.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				Set<Document> selectedDocuments = grid.getSelectedItems();
-				selectedDocuments.forEach(action -> {
-					action.setUpdated(new Date());
-				});
-				
-				dataProvider.refreshAll();
+				if (selectedDocuments.size() == 1) {
+					selectedDocuments.forEach(action -> {
+						DocumentWindow documentWindow = new DocumentWindow();
+						documentWindow.init(action, jpaHandler.findAll(new Theme()));				
+						documentWindow.addCloseListener(new CloseListener() {
+							@Override
+							public void windowClose(CloseEvent event) {
+								if (documentWindow.isPersist()) {
+									Document updatedDocument = documentWindow.getDocument();
+									updatedDocument.setUpdated(new Date());
+									if (updatedDocument != null) {
+										jpaHandler.update(updatedDocument);
+										dataProvider.refreshAll();								
+										grid.select(updatedDocument);
+									}							
+								}
+							}
+						});
+						UI.getCurrent().addWindow(documentWindow);
+					});
+				}
 			}
 		});
+		
+		bEditDocumentContent = uiBuilder.button(VaadinIcons.EDIT, "Edit Document Content").build();
+		bEditDocumentContent.addClickListener(new Button.ClickListener() {
+			public void buttonClick(ClickEvent event) {
+				// 
+			}
+		});		
 		
 		bSave = uiBuilder.button(VaadinIcons.DATABASE, "Save Document").build();
 		bSave.addClickListener(new Button.ClickListener() {
@@ -244,10 +269,10 @@ public class MainWindow extends Window implements Serializable {
 	private VerticalLayout initLayouts() {
 
 		VerticalLayout upperToolbar = uiBuilder.VL().undefined().build();
-		upperToolbar.addComponents(bAdd, bRemove, bSelectionMode, bThemes);
+		upperToolbar.addComponents(bAdd, bEditDocument, bRemove, bSelectionMode, bThemes);
 
 		VerticalLayout lowerToolbar = uiBuilder.VL().undefined().build();
-		lowerToolbar.addComponents(bEdit, bAddCode, bSave);		
+		lowerToolbar.addComponents(bEditDocumentContent, bAddCode, bSave);		
 
 		HorizontalLayout mainUpperLayout = uiBuilder.HL().margin().full().build();
 		mainUpperLayout.addComponents(upperToolbar, grid);

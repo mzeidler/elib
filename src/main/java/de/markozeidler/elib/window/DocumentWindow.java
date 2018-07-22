@@ -3,15 +3,11 @@ package de.markozeidler.elib.window;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-
-import javax.inject.Inject;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
@@ -22,12 +18,9 @@ import com.vaadin.ui.Window;
 
 import de.markozeidler.elib.entity.Document;
 import de.markozeidler.elib.entity.Theme;
-import de.markozeidler.jpa.JPAHandler;
 
 public class DocumentWindow extends Window implements Serializable {
 
-	private JPAHandler jpaHandler;
-	
 	private TextField tTitle;
 	
 	private DocumentWindow documentWindow;
@@ -42,6 +35,8 @@ public class DocumentWindow extends Window implements Serializable {
 		
 	private boolean persist;
 	
+	private List<Theme> themes;
+	
 	public Document getDocument() {
 		return document;
 	}
@@ -54,15 +49,14 @@ public class DocumentWindow extends Window implements Serializable {
 		return persist;
 	}
 
-	@Inject
-	public DocumentWindow(JPAHandler jpaHandler) {
-		this.jpaHandler = jpaHandler;
+	public DocumentWindow() {
 		this.documentWindow = this;
 	}
 	
-	public void init(Document document) {
+	public void init(Document document, List<Theme> themes) {
 		persist = false;
 		this.document = document;
+		this.themes = themes;
 		setCaption(document == null ? "Add Document" : "Edit Document");
 		setWidth(500, Unit.PIXELS);
 		setClosable(true);
@@ -81,8 +75,6 @@ public class DocumentWindow extends Window implements Serializable {
 		tTitle.setCaption("Title");
 		tTitle.setWidth(100, Unit.PERCENTAGE);
 				
-		List<Theme> themes =jpaHandler.findAll(new Theme());
-		
 		cmbThemes = new NativeSelect<>(null, themes);
 		cmbThemes.setCaption("Theme");
 		cmbThemes.setWidth(50, Unit.PERCENTAGE);
@@ -108,7 +100,7 @@ public class DocumentWindow extends Window implements Serializable {
 					document.setTitle(tTitle.getValue());					
 					document.setUpdated(new Date());
 					persist = true;
-					UI.getCurrent().removeWindow(documentWindow);					
+					UI.getCurrent().removeWindow(documentWindow);
 				}
 			}
 		});

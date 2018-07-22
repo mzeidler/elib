@@ -52,9 +52,8 @@ public class MainWindow extends Window implements Serializable {
 	
 	private ThemesWindow themesWindow;
 	
-	private DocumentWindow documentWindow;
-	
 	private List<Document> documents;
+	
 	/**
 	 * Buttons
 	 */
@@ -74,12 +73,11 @@ public class MainWindow extends Window implements Serializable {
 	private Button bThemes;
 	
 	@Inject
-	public MainWindow(JPAHandler jpaHandler, HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow, DocumentWindow documentWindow) {
+	public MainWindow(JPAHandler jpaHandler, HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow) {
 		this.jpaHandler = jpaHandler;
 		this.headerLayout = headerLayout;
 		this.uiBuilder = uiBuilder;
 		this.themesWindow = themesWindow;
-		this.documentWindow = documentWindow;
 	}
 
 	public void init() {
@@ -149,16 +147,12 @@ public class MainWindow extends Window implements Serializable {
 	}
 	
 	private void initButtons() {
-		
+
 		bAdd = uiBuilder.button(VaadinIcons.FILE_ADD, "Add Document").build();
 		bAdd.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				
-				//**********************************************************************************
-				// TODO: UNDER CONSTRUCTION
-				
-				documentWindow.init(null);
-				UI.getCurrent().addWindow(documentWindow);
+				DocumentWindow documentWindow = new DocumentWindow();
+				documentWindow.init(null, jpaHandler.findAll(new Theme()));				
 				documentWindow.addCloseListener(new CloseListener() {
 					@Override
 					public void windowClose(CloseEvent event) {
@@ -172,8 +166,7 @@ public class MainWindow extends Window implements Serializable {
 						}
 					}
 				});
-				
-				//**********************************************************************************
+				UI.getCurrent().addWindow(documentWindow);
 			}
 		});
 		
@@ -181,7 +174,6 @@ public class MainWindow extends Window implements Serializable {
 		bRemove.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
 				Set<Document> selectedDocuments = grid.getSelectedItems();
-				System.out.println("MARKOTEST: selectedDocuments.size()=" + selectedDocuments.size());
 				if (selectedDocuments.size() > 0) {
 					String themeText = selectedDocuments.size() == 1 ? "this Theme" : "these Themes";
 					ConfirmationWindow confirmationWindow = new ConfirmationWindow("Are you sure that you want to delete " + themeText + "?", "Yes", "No");

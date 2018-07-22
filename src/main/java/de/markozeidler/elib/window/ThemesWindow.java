@@ -183,7 +183,7 @@ public class ThemesWindow extends Window implements Serializable {
 				}
 				
 				if (tName.getValue() == null || "".equals(tName.getValue())) {
-					Notification.show("The Themename may not be empty", Type.WARNING_MESSAGE);
+					Notification.show("The Theme name may not be empty", Type.WARNING_MESSAGE);
 				} else {
 					theme.setName(tName.getValue());
 					if (isNew) {

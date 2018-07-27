@@ -119,7 +119,7 @@ public class MainWindow extends Window implements Serializable {
 		grid.addColumn(Document::getCreated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Created");
 		grid.addColumn(Document::getUpdated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Updated");
 		
-		// %1$td.%1$tm.%1$tY %1$tT
+		// %1$td.%1$tm.%1$tY %1$tT //
 				
 		// Data		
 		grid.setDataProvider(dataRepository.getDocumentDataProvider());

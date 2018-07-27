@@ -1,6 +1,5 @@
 package de.markozeidler.elib.window;
 
-import java.awt.Dialog;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;

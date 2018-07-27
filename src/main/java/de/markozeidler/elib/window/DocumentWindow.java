@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.FormLayout;
@@ -18,9 +20,12 @@ import com.vaadin.ui.Window;
 
 import de.markozeidler.elib.entity.Document;
 import de.markozeidler.elib.entity.Theme;
+import de.markozeidler.jpa.DataRepository;
 
 public class DocumentWindow extends Window implements Serializable {
 
+	private DataRepository dataRepository;
+	
 	private TextField tTitle;
 	
 	private DocumentWindow documentWindow;
@@ -32,10 +37,12 @@ public class DocumentWindow extends Window implements Serializable {
 	private Button bCancel;
 	
 	private Document document;
-		
-	private boolean persist;
 	
-	private List<Theme> themes;
+	@Inject
+	public DocumentWindow(DataRepository dataRepository) {
+		this.dataRepository = dataRepository;
+		this.documentWindow = this;
+	}
 	
 	public Document getDocument() {
 		return document;
@@ -44,19 +51,9 @@ public class DocumentWindow extends Window implements Serializable {
 	public void setDocument(Document document) {
 		this.document = document;
 	}
-
-	public boolean isPersist() {
-		return persist;
-	}
-
-	public DocumentWindow() {
-		this.documentWindow = this;
-	}
 	
-	public void init(Document document, List<Theme> themes) {
-		persist = false;
+	public void init(Document document) {
 		this.document = document;
-		this.themes = themes;
 		setCaption(document == null ? "Add Document" : "Edit Document");
 		setWidth(500, Unit.PIXELS);
 		setClosable(true);
@@ -82,8 +79,8 @@ public class DocumentWindow extends Window implements Serializable {
 		tTitle = new TextField();
 		tTitle.setCaption("Title");
 		tTitle.setWidth(100, Unit.PERCENTAGE);		
-				
-		cmbThemes = new NativeSelect<>(null, themes);
+						
+		cmbThemes = new NativeSelect<>(null, dataRepository.findAllThemes());
 		cmbThemes.setCaption("Theme");
 		cmbThemes.setWidth(50, Unit.PERCENTAGE);
 		
@@ -94,7 +91,8 @@ public class DocumentWindow extends Window implements Serializable {
 				if (tTitle.getValue() == null || "".equals(tTitle.getValue())) {
 					Notification.show("The Document name may not be empty", Type.WARNING_MESSAGE);
 				} else {
-					if (document == null) {
+					boolean isNew = document == null;
+					if (isNew) {
 						document = new Document();
 						document.setCreated(new Date());
 					}
@@ -107,7 +105,14 @@ public class DocumentWindow extends Window implements Serializable {
 					
 					document.setTitle(tTitle.getValue());					
 					document.setUpdated(new Date());
-					persist = true;
+					
+					// Save Document
+					if (isNew) {
+						dataRepository.saveDocument(document);
+					} else {
+						dataRepository.updateDocument(document);
+					}
+					
 					UI.getCurrent().removeWindow(documentWindow);
 				}
 			}

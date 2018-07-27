@@ -27,29 +27,33 @@ import de.markozeidler.elib.builder.UIBuilder;
 import de.markozeidler.elib.entity.Document;
 import de.markozeidler.elib.entity.Theme;
 import de.markozeidler.elib.layouts.HeaderLayout;
+import de.markozeidler.jpa.DataRepository;
 import de.markozeidler.jpa.JPAHandler;
 
 public class MainWindow extends Window implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private JPAHandler jpaHandler;
+	private DataRepository dataRepository;
 
 	private HeaderLayout headerLayout;
 
 	private VerticalSplitPanel splitPanel;
 
 	private Grid<Document> grid;
-	
-	private ListDataProvider<Document> dataProvider;
 
 	private TextArea textArea;
 
 	private UIBuilder uiBuilder;
 	
+	/**
+	 * Windows
+	 */
 	private ThemesWindow themesWindow;
 	
-	private List<Document> documents;
+	private RemoveDocumentWindow removeDocumentWindow;
+		
+	private DocumentWindow documentWindow;
 	
 	/**
 	 * Buttons
@@ -72,11 +76,14 @@ public class MainWindow extends Window implements Serializable {
 	private Button bThemes;
 	
 	@Inject
-	public MainWindow(JPAHandler jpaHandler, HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow) {
-		this.jpaHandler = jpaHandler;
+	public MainWindow(HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow, DataRepository dataRepository,
+			RemoveDocumentWindow removeDocumentWindow, DocumentWindow documentWindow) {
 		this.headerLayout = headerLayout;
 		this.uiBuilder = uiBuilder;
 		this.themesWindow = themesWindow;
+		this.dataRepository = dataRepository;
+		this.removeDocumentWindow = removeDocumentWindow;
+		this.documentWindow = documentWindow;
 	}
 
 	public void init() {
@@ -116,10 +123,8 @@ public class MainWindow extends Window implements Serializable {
 		grid.addColumn(Document::getUpdated).setCaption("Updated");
 		
 		// Data		
-		documents = jpaHandler.findAll(new Document());
-		dataProvider = new ListDataProvider<Document>(documents);
-		grid.setDataProvider(dataProvider);
-		
+		grid.setDataProvider(dataRepository.getDocumentDataProvider());
+		dataRepository.setGrid(grid);
 	}
 	
 	private void initGrid_old() {
@@ -152,22 +157,7 @@ public class MainWindow extends Window implements Serializable {
 		bAdd = uiBuilder.button(VaadinIcons.FILE_ADD, "Add Document").build();
 		bAdd.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				DocumentWindow documentWindow = new DocumentWindow();
-				documentWindow.init(null, jpaHandler.findAll(new Theme()));				
-				documentWindow.addCloseListener(new CloseListener() {
-					@Override
-					public void windowClose(CloseEvent event) {
-						if (documentWindow.isPersist()) {
-							Document newDocument = documentWindow.getDocument();
-							if (newDocument != null) {
-								jpaHandler.save(newDocument);
-								documents.add(newDocument);
-								dataProvider.refreshAll();								
-								grid.select(newDocument);
-							}							
-						}
-					}
-				});
+				documentWindow.init(null);				
 				UI.getCurrent().addWindow(documentWindow);
 			}
 		});
@@ -177,21 +167,8 @@ public class MainWindow extends Window implements Serializable {
 			public void buttonClick(ClickEvent event) {
 				Set<Document> selectedDocuments = grid.getSelectedItems();
 				if (selectedDocuments.size() > 0) {
-					String themeText = selectedDocuments.size() == 1 ? "this Theme" : "these Themes";
-					ConfirmationWindow confirmationWindow = new ConfirmationWindow("Are you sure that you want to delete " + themeText + "?", "Yes", "No");
-					UI.getCurrent().addWindow(confirmationWindow);
-					confirmationWindow.addCloseListener(new CloseListener() {
-						@Override
-						public void windowClose(CloseEvent event) {
-							if ("Yes".equals(confirmationWindow.getSelectedOption())) {
-								selectedDocuments.forEach(action -> {
-									jpaHandler.remove(action);
-									documents.remove(action);
-								});
-								dataProvider.refreshAll();
-							}
-						}
-					});					
+					removeDocumentWindow.init(selectedDocuments);
+					UI.getCurrent().addWindow(removeDocumentWindow);
 				}
 			}
 		});
@@ -202,22 +179,7 @@ public class MainWindow extends Window implements Serializable {
 				Set<Document> selectedDocuments = grid.getSelectedItems();
 				if (selectedDocuments.size() == 1) {
 					selectedDocuments.forEach(action -> {
-						DocumentWindow documentWindow = new DocumentWindow();
-						documentWindow.init(action, jpaHandler.findAll(new Theme()));				
-						documentWindow.addCloseListener(new CloseListener() {
-							@Override
-							public void windowClose(CloseEvent event) {
-								if (documentWindow.isPersist()) {
-									Document updatedDocument = documentWindow.getDocument();
-									updatedDocument.setUpdated(new Date());
-									if (updatedDocument != null) {
-										jpaHandler.update(updatedDocument);
-										dataProvider.refreshAll();								
-										grid.select(updatedDocument);
-									}							
-								}
-							}
-						});
+						documentWindow.init(action);				
 						UI.getCurrent().addWindow(documentWindow);
 					});
 				}

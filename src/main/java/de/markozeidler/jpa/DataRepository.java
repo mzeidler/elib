@@ -45,6 +45,20 @@ public class DataRepository {
 		return jpaHandler.findAll(new Theme());
 	}
 	
+	public void saveTheme(Theme theme) {
+		jpaHandler.save(theme);
+	}
+	
+	public void removeTheme(Theme theme) {
+		jpaHandler.remove(theme);
+	}
+	
+	public void updateTheme(Theme theme) {
+		jpaHandler.update(theme);
+		// Update Grid
+		documentsDataProvider.refreshAll();	
+	}
+	
 	/**
 	 * 
 	 * Documents

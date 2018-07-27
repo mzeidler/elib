@@ -21,13 +21,14 @@ import com.vaadin.ui.Window;
 
 import de.markozeidler.elib.builder.UIBuilder;
 import de.markozeidler.elib.entity.Theme;
+import de.markozeidler.jpa.DataRepository;
 import de.markozeidler.jpa.JPAHandler;
 
 public class ThemesWindow extends Window implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private DataRepository dataRepository;
 	
-	private JPAHandler jpaHandler;
+	private static final long serialVersionUID = 1L;
 	
 	private UIBuilder uiBuilder;
 	
@@ -61,8 +62,8 @@ public class ThemesWindow extends Window implements Serializable {
 	private Button bSave;
 
 	@Inject
-	public ThemesWindow(JPAHandler jpaHandler, UIBuilder uiBuilder) {
-		this.jpaHandler = jpaHandler;
+	public ThemesWindow(DataRepository dataRepository, UIBuilder uiBuilder) {
+		this.dataRepository = dataRepository;
 		this.uiBuilder = uiBuilder;
 		this.themesWindow = themesWindow;
 	}
@@ -91,7 +92,7 @@ public class ThemesWindow extends Window implements Serializable {
         tName = uiBuilder.textField("Theme").caption("Theme").build();
         tName.setWidth(100, Unit.PERCENTAGE);
         
-		themes = jpaHandler.findAllThemes();		 
+		themes = dataRepository.findAllThemes();		 
         themesList = new ListSelect<>(null, themes);
         themesList.setSizeFull();
         themesList.addValueChangeListener(event -> { 
@@ -106,7 +107,7 @@ public class ThemesWindow extends Window implements Serializable {
 	}
 	
 	private void refreshList() {
-		themes = jpaHandler.findAllThemes();
+		themes = dataRepository.findAllThemes();
 		themesList.setItems(themes);
 	}
 	
@@ -145,7 +146,7 @@ public class ThemesWindow extends Window implements Serializable {
 							@Override
 							public void windowClose(CloseEvent event) {
 								if ("Yes".equals(confirmationWindow.getSelectedOption())) {
-									jpaHandler.remove(theme);
+									dataRepository.removeTheme(theme);
 									refreshList();
 									setEditMode(EditMode.Browse);								
 								}
@@ -184,15 +185,27 @@ public class ThemesWindow extends Window implements Serializable {
 				if (tName.getValue() == null || "".equals(tName.getValue())) {
 					Notification.show("The Theme name may not be empty", Type.WARNING_MESSAGE);
 				} else {
-					theme.setName(tName.getValue());
-					if (isNew) {
-						jpaHandler.save(theme);
-					} else {
-						jpaHandler.update(theme);
+					
+					boolean exists = false;
+					for (Theme t : dataRepository.findAllThemes()) {
+						if (t.getName().equals(tName.getValue())) {
+							exists = true;
+							Notification.show("The Theme name already exists", Type.WARNING_MESSAGE);
+							break;
+						}
 					}
 					
-					refreshList();
-					setEditMode(EditMode.Browse);
+					if (!exists) {
+						theme.setName(tName.getValue());
+						if (isNew) {
+							dataRepository.saveTheme(theme);
+						} else {
+							dataRepository.updateTheme(theme);
+						}
+						
+						refreshList();
+						setEditMode(EditMode.Browse);						
+					}
 				}
 				
 			}

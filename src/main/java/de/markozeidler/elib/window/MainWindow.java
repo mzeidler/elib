@@ -1,13 +1,11 @@
 package de.markozeidler.elib.window;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.inject.Inject;
 
-import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -21,14 +19,13 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.components.grid.SingleSelectionModel;
+import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 
 import de.markozeidler.elib.builder.UIBuilder;
 import de.markozeidler.elib.entity.Document;
-import de.markozeidler.elib.entity.Theme;
 import de.markozeidler.elib.layouts.HeaderLayout;
 import de.markozeidler.jpa.DataRepository;
-import de.markozeidler.jpa.JPAHandler;
 
 public class MainWindow extends Window implements Serializable {
 
@@ -119,9 +116,11 @@ public class MainWindow extends Window implements Serializable {
 		// Columns
 		grid.addColumn(Document::getTheme).setCaption("Theme");
 		grid.addColumn(Document::getTitle).setCaption("Title");
-		grid.addColumn(Document::getCreated).setCaption("Created");
-		grid.addColumn(Document::getUpdated).setCaption("Updated");
+		grid.addColumn(Document::getCreated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Created");
+		grid.addColumn(Document::getUpdated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Updated");
 		
+		// %1$td.%1$tm.%1$tY %1$tT
+				
 		// Data		
 		grid.setDataProvider(dataRepository.getDocumentDataProvider());
 		dataRepository.setGrid(grid);

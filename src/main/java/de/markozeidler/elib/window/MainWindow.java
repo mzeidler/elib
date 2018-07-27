@@ -12,18 +12,22 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.TextArea;
+import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.Window;
+import com.vaadin.ui.components.grid.HeaderRow;
 import com.vaadin.ui.components.grid.SingleSelectionModel;
 import com.vaadin.ui.renderers.DateRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 
 import de.markozeidler.elib.builder.UIBuilder;
 import de.markozeidler.elib.entity.Document;
+import de.markozeidler.elib.entity.Theme;
 import de.markozeidler.elib.layouts.HeaderLayout;
 import de.markozeidler.jpa.DataRepository;
 
@@ -114,14 +118,47 @@ public class MainWindow extends Window implements Serializable {
 		grid.setSelectionMode(SelectionMode.SINGLE);
 		
 		// Columns
-		grid.addColumn(Document::getTheme).setCaption("Theme");
-		grid.addColumn(Document::getTitle).setCaption("Title");
-		grid.addColumn(Document::getCreated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Created");
-		grid.addColumn(Document::getUpdated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Updated");
+		grid.addColumn(Document::getTheme).setCaption("Theme").setId("theme");
+		grid.addColumn(Document::getTitle).setCaption("Title").setId("title");
 		
-		// %1$td.%1$tm.%1$tY %1$tT //
-				
-		// Data		
+		grid.addColumn(Document::getCreated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Created");
+		grid.addColumn(Document::getUpdated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH)).setCaption("Updated");			
+		
+		// Filter
+	    TextField titleFilter = new TextField();
+	    titleFilter.setWidth("100%");
+	    titleFilter.addStyleName(ValoTheme.TEXTFIELD_TINY);
+	    titleFilter.setPlaceholder("Filter");       
+	    titleFilter.addValueChangeListener(event -> {        	
+        	dataRepository.getDocumentDataProvider().setFilter(Document::getTitle, documentTitle -> {
+                if (documentTitle == null) {
+                    return false;
+                }
+                return documentTitle.toLowerCase().contains(event.getValue().toLowerCase());
+            });
+        });
+        
+        
+        NativeSelect<Theme> themeFilter = new NativeSelect<>(null, dataRepository.findAllThemes());
+        themeFilter.setWidth("100%");       
+        themeFilter.addValueChangeListener(event -> {
+        	dataRepository.getDocumentDataProvider().setFilter(Document::getTheme, theme -> {
+        		if (event.getValue() == null) {
+        			return true;
+        		}
+                if (theme == null) {
+                    return false;
+                }
+                return theme.getId().equals(event.getValue().getId());
+            });
+        	
+        });
+        
+        
+        HeaderRow filterRow = grid.appendHeaderRow();
+        filterRow.getCell("title").setComponent(titleFilter);
+        filterRow.getCell("theme").setComponent(themeFilter);
+        
 		grid.setDataProvider(dataRepository.getDocumentDataProvider());
 		dataRepository.setGrid(grid);
 	}

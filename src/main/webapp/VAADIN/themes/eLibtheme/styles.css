@@ -15114,3 +15114,16 @@ div.v-layout.v-horizontal.v-widget {
 .eLibtheme .paddingBottom {
 	padding-bottom: 10px;
 }
+
+.eLibtheme .v-grid-row {
+	background-color: green;
+}
+
+.eLibtheme .v-grid-cell {
+	font-family: Roboto, sans-serif;
+	font-size: 12px;
+}
+
+.eLibtheme .v-grid-header-cell {
+	font-weight: bold;
+}

@@ -123,13 +123,13 @@ public class MainWindow extends Window implements Serializable {
 		grid.setSelectionMode(SelectionMode.SINGLE);
 
 		// Columns
-		grid.addColumn(Document::getTheme).setCaption("Theme").setId("theme");
-		grid.addColumn(Document::getTitle).setCaption("Title").setId("title");
+		grid.addColumn(Document::getTheme).setCaption("Theme").setId("theme").setExpandRatio(2);
+		grid.addColumn(Document::getTitle).setCaption("Title").setId("title").setExpandRatio(8);
 
 		grid.addColumn(Document::getCreated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH))
-				.setCaption("Created");
+				.setCaption("Created").setExpandRatio(1);
 		grid.addColumn(Document::getUpdated, new DateRenderer("%1$td.%1$tm.%1$tY", Locale.ENGLISH))
-				.setCaption("Updated");
+				.setCaption("Updated").setExpandRatio(1);
 
 		// Filter
 		titleFilter = new TextField();
@@ -175,7 +175,7 @@ public class MainWindow extends Window implements Serializable {
 		filterRow.getCell("theme").setComponent(themeFilter);
 
 		grid.setDataProvider(dataRepository.getDocumentDataProvider());
-		dataRepository.setGrid(grid);
+		dataRepository.setGrid(grid); //
 	}
 
 	private void initGrid_old() {

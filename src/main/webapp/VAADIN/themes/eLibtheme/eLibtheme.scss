@@ -85,5 +85,17 @@
   
   .paddingBottom {padding-bottom: 10px;}
   
+  .v-grid-row {
+  	background-color: green;
+  }
+  
+  .v-grid-cell {
+  	font-family: Roboto, sans-serif;
+  	font-size: 12px;
+  }
+  
+  .v-grid-header-cell {
+  	font-weight: bold;
+  }
 }
 

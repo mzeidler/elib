@@ -1,5 +1,8 @@
 package de.markozeidler.elib.window;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
@@ -8,6 +11,8 @@ import javax.inject.Inject;
 
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.SerializablePredicate;
+import com.vaadin.server.StreamResource;
+import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Grid;
@@ -15,6 +20,8 @@ import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.Notification.Type;
+import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -44,8 +51,6 @@ public class MainWindow extends Window implements Serializable {
 
 	private Grid<Document> grid;
 
-	private TextArea textArea;
-
 	private UIBuilder uiBuilder;
 
 	/**
@@ -60,6 +65,8 @@ public class MainWindow extends Window implements Serializable {
 	private TextField titleFilter;
 	
 	private NativeSelect<Theme> themeFilter;
+	
+	private RichTextArea textArea;
 	
 	/**
 	 * Buttons
@@ -96,6 +103,7 @@ public class MainWindow extends Window implements Serializable {
 		initWindow();
 		initComponents();
 		initGrid();
+		addGridListener();
 		initButtons();
 		headerLayout.init();
 		setContent(initLayouts());
@@ -110,8 +118,8 @@ public class MainWindow extends Window implements Serializable {
 		center();
 	}
 
-	private void initComponents() {
-		textArea = new TextArea();
+	private void initComponents() {	
+		textArea = new RichTextArea();
 		textArea.setSizeFull();
 	}
 
@@ -175,31 +183,7 @@ public class MainWindow extends Window implements Serializable {
 		filterRow.getCell("theme").setComponent(themeFilter);
 
 		grid.setDataProvider(dataRepository.getDocumentDataProvider());
-		dataRepository.setGrid(grid); //
-	}
-
-	private void initGrid_old() {
-
-		// **********************************************************************************
-		// TODO: UNDER CONSTRUCTION
-
-		grid.addSelectionListener(event -> {
-			Set<Document> selected = event.getAllSelectedItems();
-
-			if (selected.size() > 0) {
-
-				Document doc = (Document) selected.toArray()[0];
-				textArea.setValue(doc.getTitle());
-
-				if (doc.getContent() != null) {
-					// textArea.setValue(doc.getContent());
-					textArea.setValue(doc.getTitle());
-				}
-			}
-
-			Notification.show(selected.size() + " items selected");
-		});
-		// **********************************************************************************
+		dataRepository.setGrid(grid);		
 	}
 
 	private void initButtons() {
@@ -246,8 +230,13 @@ public class MainWindow extends Window implements Serializable {
 		bSave = uiBuilder.button(VaadinIcons.DATABASE, "Save Document").build();
 		bSave.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				Set<Document> selectedDocument = grid.getSelectedItems();
+				if (selectedDocument.size() == 1) {
+					Document doc = (Document) selectedDocument.toArray()[0];
+					doc.setContent(textArea.getValue());
+					dataRepository.updateDocument(doc);
+					Notification.show("Document saved", Type.TRAY_NOTIFICATION);
+				}
 			}
 		});
 
@@ -266,6 +255,7 @@ public class MainWindow extends Window implements Serializable {
 					grid.setSelectionMode(SelectionMode.MULTI);
 				} else {
 					grid.setSelectionMode(SelectionMode.SINGLE);
+					addGridListener();
 				}
 			}
 		});
@@ -279,13 +269,28 @@ public class MainWindow extends Window implements Serializable {
 		});
 	}
 
+	private void addGridListener() {
+		grid.addSelectionListener(gridEvent -> {
+			Set<Document> selected = gridEvent.getAllSelectedItems();
+			if (selected.size() > 0) {
+				Document doc = (Document) selected.toArray()[0];
+				if (doc.getContent() != null) {
+					textArea.setValue(doc.getContent());
+				} else {
+					textArea.setValue("");
+				}
+			}
+		});
+	}
+	
 	private VerticalLayout initLayouts() {
 
 		VerticalLayout upperToolbar = uiBuilder.VL().undefined().build();
 		upperToolbar.addComponents(bAdd, bEditDocument, bRemove, bSelectionMode, bThemes);
 
 		VerticalLayout lowerToolbar = uiBuilder.VL().undefined().build();
-		lowerToolbar.addComponents(bEditDocumentContent, bAddCode, bSave);
+		//lowerToolbar.addComponents(bEditDocumentContent, bAddCode, bSave);
+		lowerToolbar.addComponents(bSave);
 
 		HorizontalLayout mainUpperLayout = uiBuilder.HL().margin().full().build();
 		mainUpperLayout.addComponents(upperToolbar, grid);

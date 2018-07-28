@@ -66,11 +66,9 @@ public class DataRepository {
 	 */
 	public ListDataProvider<Document> getDocumentDataProvider() {
 		if (documents == null) {
-			System.out.println("MARKOTEST: updating documents");
 			documents = jpaHandler.findAll(new Document());
 		}
 		if (documentsDataProvider == null) {
-			System.out.println("MARKOTEST: initializing documentsDataProvider");
 			documentsDataProvider = new ListDataProvider<Document>(documents);
 		}
 		return documentsDataProvider;

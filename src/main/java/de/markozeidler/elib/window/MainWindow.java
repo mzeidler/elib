@@ -1,8 +1,5 @@
 package de.markozeidler.elib.window;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Set;
@@ -11,8 +8,6 @@ import javax.inject.Inject;
 
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.SerializablePredicate;
-import com.vaadin.server.StreamResource;
-import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Grid;
@@ -22,7 +17,6 @@ import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Notification.Type;
 import com.vaadin.ui.RichTextArea;
-import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
@@ -62,6 +56,8 @@ public class MainWindow extends Window implements Serializable {
 
 	private DocumentWindow documentWindow;
 
+	private HtmlCodeEditor htmlCodeEditor;
+	
 	private TextField titleFilter;
 	
 	private NativeSelect<Theme> themeFilter;
@@ -90,13 +86,15 @@ public class MainWindow extends Window implements Serializable {
 
 	@Inject
 	public MainWindow(HeaderLayout headerLayout, UIBuilder uiBuilder, ThemesWindow themesWindow,
-			DataRepository dataRepository, RemoveDocumentWindow removeDocumentWindow, DocumentWindow documentWindow) {
+			DataRepository dataRepository, RemoveDocumentWindow removeDocumentWindow, DocumentWindow documentWindow,
+			HtmlCodeEditor htmlCodeEditor) {
 		this.headerLayout = headerLayout;
 		this.uiBuilder = uiBuilder;
 		this.themesWindow = themesWindow;
 		this.dataRepository = dataRepository;
 		this.removeDocumentWindow = removeDocumentWindow;
 		this.documentWindow = documentWindow;
+		this.htmlCodeEditor = htmlCodeEditor;
 	}
 
 	public void init() {
@@ -243,8 +241,12 @@ public class MainWindow extends Window implements Serializable {
 		bAddCode = uiBuilder.button(VaadinIcons.FILE_CODE, "Add Code Snippet").build();
 		bAddCode.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				//
-
+				Set<Document> selectedDocument = grid.getSelectedItems();
+				if (selectedDocument.size() == 1) {
+					Document doc = (Document) selectedDocument.toArray()[0];
+					htmlCodeEditor.init(doc, textArea);
+					UI.getCurrent().addWindow(htmlCodeEditor);
+				}
 			}
 		});
 
@@ -290,7 +292,7 @@ public class MainWindow extends Window implements Serializable {
 
 		VerticalLayout lowerToolbar = uiBuilder.VL().undefined().build();
 		//lowerToolbar.addComponents(bEditDocumentContent, bAddCode, bSave);
-		lowerToolbar.addComponents(bSave);
+		lowerToolbar.addComponents(bSave, bAddCode);
 
 		HorizontalLayout mainUpperLayout = uiBuilder.HL().margin().full().build();
 		mainUpperLayout.addComponents(upperToolbar, grid);

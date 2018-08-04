@@ -1,5 +1,6 @@
 package de.markozeidler.jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -79,6 +80,7 @@ public class DataRepository {
 		documents.add(entity);
 		documentsDataProvider.refreshAll();	
 		grid.select(entity);
+		grid.scrollTo(new ArrayList(((ListDataProvider) grid.getDataProvider()).getItems()).indexOf(entity));
 	}
 	
 	public void removeDocument(Document entity) {
@@ -99,5 +101,6 @@ public class DataRepository {
 		jpaHandler.update(entity);
 		documentsDataProvider.refreshAll();	
 		grid.select(entity);
+		grid.scrollTo(new ArrayList(((ListDataProvider) grid.getDataProvider()).getItems()).indexOf(entity));
 	}	
 }

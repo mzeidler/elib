@@ -37,6 +37,8 @@ public class DocumentWindow extends Window implements Serializable {
 	
 	private Document document;
 	
+	private Theme filteredTheme;
+	
 	@Inject
 	public DocumentWindow(DataRepository dataRepository) {
 		this.dataRepository = dataRepository;
@@ -51,8 +53,9 @@ public class DocumentWindow extends Window implements Serializable {
 		this.document = document;
 	}
 	
-	public void init(Document document) {
+	public void init(Document document, Theme filteredTheme) {
 		this.document = document;
+		this.filteredTheme = filteredTheme;
 		setCaption(document == null ? "Add Document" : "Edit Document");
 		setWidth(500, Unit.PIXELS);
 		setClosable(true);
@@ -70,6 +73,8 @@ public class DocumentWindow extends Window implements Serializable {
 		if (document != null) {
 			tTitle.setValue(document.getTitle());
 			cmbThemes.setValue(document.getTheme());
+		} else if (filteredTheme != null) {
+			cmbThemes.setValue(filteredTheme);
 		}
 	}
 	

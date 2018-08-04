@@ -1,11 +1,13 @@
 package de.markozeidler.elib.window;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.ui.Button;
@@ -189,7 +191,8 @@ public class MainWindow extends Window implements Serializable {
 		bAdd = uiBuilder.button(VaadinIcons.FILE_ADD, "Add Document").build();
 		bAdd.addClickListener(new Button.ClickListener() {
 			public void buttonClick(ClickEvent event) {
-				documentWindow.init(null);
+				documentWindow.init(null, themeFilter.getSelectedItem().isPresent() ? themeFilter.getSelectedItem().get() : null);
+				//
 				UI.getCurrent().addWindow(documentWindow);
 			}
 		});
@@ -211,7 +214,7 @@ public class MainWindow extends Window implements Serializable {
 				Set<Document> selectedDocuments = grid.getSelectedItems();
 				if (selectedDocuments.size() == 1) {
 					selectedDocuments.forEach(action -> {
-						documentWindow.init(action);
+						documentWindow.init(action, themeFilter.getSelectedItem().isPresent() ? themeFilter.getSelectedItem().get() : null);
 						UI.getCurrent().addWindow(documentWindow);
 					});
 				}
@@ -273,6 +276,7 @@ public class MainWindow extends Window implements Serializable {
 
 	private void addGridListener() {
 		grid.addSelectionListener(gridEvent -> {
+			//Document selected = gridEvent.getFirstSelectedItem().get();
 			Set<Document> selected = gridEvent.getAllSelectedItems();
 			if (selected.size() > 0) {
 				Document doc = (Document) selected.toArray()[0];

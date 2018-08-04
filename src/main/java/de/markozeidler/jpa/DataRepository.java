@@ -80,7 +80,7 @@ public class DataRepository {
 		documents.add(entity);
 		documentsDataProvider.refreshAll();	
 		grid.select(entity);
-		grid.scrollTo(new ArrayList(((ListDataProvider) grid.getDataProvider()).getItems()).indexOf(entity));
+		scrollTo(entity);
 	}
 	
 	public void removeDocument(Document entity) {
@@ -101,6 +101,15 @@ public class DataRepository {
 		jpaHandler.update(entity);
 		documentsDataProvider.refreshAll();	
 		grid.select(entity);
-		grid.scrollTo(new ArrayList(((ListDataProvider) grid.getDataProvider()).getItems()).indexOf(entity));
+		scrollTo(entity);
 	}	
+	
+	private void scrollTo(Document document) {
+		//List<Document> documents = (List<Document>) documentsDataProvider.getItems();
+		
+		//System.out.println("MARKOTEST: items in grid: " + documents.size());
+		
+		
+		//grid.scrollTo(new ArrayList(((ListDataProvider) grid.getDataProvider()).getItems()).indexOf(entity));
+	}
 }
